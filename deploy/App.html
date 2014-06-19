@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TestFolderEditableGrid</title>
+
+    <script type="text/javascript" src="/apps/2.0rc3/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                var Ext=window.Ext4||window.Ext;Ext.define("CustomApp",{extend:"Rally.app.App",componentCls:"app",launch:function(){this._loadTestFolders()},_loadTestFolders:function(){this._store=Ext.create("Rally.data.WsapiDataStore",{model:"TestFolder",autoLoad:!0,listeners:{load:function(store,records,success){this._updateGrid(this._store)},update:function(store,rec,modified,opts){this._updateGrid(this._store)},scope:this},fetch:["FormattedID","Name","Project"]})},_createGrid:function(myStore){this._myGrid=Ext.create("Rally.ui.grid.Grid",{xtype:"rallygrid",store:myStore,selType:"cellmodel",columnCfgs:[{text:"Test Folder Link",dataIndex:"FormattedID",flex:1,xtype:"templatecolumn",tpl:Ext.create("Rally.ui.renderer.template.FormattedIDTemplate")},{text:"Name",dataIndex:"Name",flex:2},"Project"]}),this.add(this._myGrid);var celledit=this._myGrid.plugins[0],oldPub=celledit.publish,newPub=function(event,varargs){"objectupdate"!==event&&oldPub.apply(this,arguments)};celledit.publish=Ext.bind(newPub,celledit)},_updateGrid:function(myStore){void 0===this._myGrid?this._createGrid(myStore):(console.log("Refreshing Grid"),myStore.reload())}});
+
+            Rally.launchApp('CustomApp', {
+                name:"TestFolderEditableGrid",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+    <style type="text/css">
+        
+    </style>
+</head>
+<body>
+</body>
+</html>

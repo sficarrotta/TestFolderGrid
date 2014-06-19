@@ -1,0 +1,74 @@
+var Ext = window.Ext4 || window.Ext;
+
+Ext.define('CustomApp', {
+    extend: 'Rally.app.App',
+    componentCls: 'app',
+
+    launch: function() {
+        this._loadTestFolders();
+        
+    },
+        
+    _loadTestFolders: function() {
+        this._store = Ext.create("Rally.data.WsapiDataStore", {
+            model: "TestFolder",
+            autoLoad: true,
+            listeners: {
+                load: function(store, records, success) {
+                   this._updateGrid(this._store);
+                },
+                update: function(store, rec, modified, opts) {
+                    this._updateGrid(this._store);
+                },
+                scope: this
+            },
+            fetch: ["FormattedID", "Name", "Project"]
+        });
+    },
+     _createGrid: function(myStore) {
+        this._myGrid = Ext.create("Rally.ui.grid.Grid", {
+            xtype: "rallygrid",
+            store: myStore,
+            selType: "cellmodel",
+            columnCfgs: [
+                 {
+                     text: "Test Folder Link",
+                     dataIndex: "FormattedID",
+                     flex: 1,
+                     xtype: "templatecolumn",
+                     tpl: Ext.create("Rally.ui.renderer.template.FormattedIDTemplate")
+                 }, 
+                 {
+                     text: "Name",
+                     dataIndex: "Name",
+                     flex: 2
+                 }, "Project"
+            ]
+        });
+        
+        this.add(this._myGrid);
+        
+        // override the event publish to prevent random refreshes of the whole app when the cell changes
+        var celledit = this._myGrid.plugins[0];
+        var oldPub = celledit.publish;
+        var newPub = function(event, varargs) {
+            if (event !== "objectupdate") {
+                oldPub.apply(this, arguments);
+            }
+            else {
+                // no-op
+            }
+        };
+
+        celledit.publish = Ext.bind(newPub, celledit);
+    },
+    _updateGrid: function(myStore) {
+        if (this._myGrid === undefined) {
+            this._createGrid(myStore);
+        }
+        else {
+            console.log("Refreshing Grid");
+            myStore.reload();
+        }
+    }
+});
